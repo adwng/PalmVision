@@ -44,7 +44,7 @@
         </ray>
         <plugin name="laser_controller" filename="libgazebo_ros_ray_sensor.so">
             <ros>
-                <remapping>~/out:=/cloud</remapping>
+                <remapping>~/out:=/lidar_points</remapping>
             </ros>
             <output_type>sensor_msgs/PointCloud2</output_type> <!-- Use PointCloud2 for 3D LiDAR -->
             <frame_name>lidar_link</frame_name>
@@ -77,55 +77,50 @@
     </sensor>
 </gazebo>
 
+<gazebo reference="imu_link">
+  <sensor name="imu_sensor" type="imu">
+    <always_on>true</always_on>
+    <update_rate>100</update_rate>
+    <visualize>true</visualize>
+    <topic>__default_topic__</topic>
+    <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+      <topicName>imu</topicName> <!-- Ensure this matches your UKF config -->
+      <bodyName>imu_link</bodyName>   <!-- This should be the same as the IMU link name -->
+      <updateRateHZ>100.0</updateRateHZ>
+      <gaussianNoise>0.0</gaussianNoise>
+      <xyzOffset>0 0 0</xyzOffset>
+      <rpyOffset>0 0 0</rpyOffset>
+      <frameName>imu</frameName> <!-- Frame name for TF broadcasts -->
+      <ros>
+        <remapping>~/out:=/imu</remapping> <!-- ROS 2 topic remapping -->
+      </ros>
+      <initialOrientationAsReference>false</initialOrientationAsReference>
+    </plugin>
+    <pose>0 0 0 0 0 0</pose>
+  </sensor>
+</gazebo>
+
 <gazebo reference="f_left_wheel_link">
   <mu1>0.9</mu1>
   <mu2>0.9</mu2>
-  <fdir1>1 0 0</fdir1>
-  <maxVel>0.0</maxVel>
-  <maxContacts>1</maxContacts>
-  <gravity>true</gravity>
-  <restitution_coefficient>1</restitution_coefficient>
-  <threshold>0</threshold>
-  <self_collide>1</self_collide>
   <material>Gazebo/Blue</material>
 </gazebo>
 
 <gazebo reference="f_right_wheel_link">
   <mu1>0.9</mu1>
   <mu2>0.9</mu2>
-  <fdir1>1 0 0</fdir1>
-  <maxVel>0.0</maxVel>
-  <maxContacts>1</maxContacts>
-  <gravity>true</gravity>
-  <restitution_coefficient>1</restitution_coefficient>
-  <threshold>0</threshold>
-  <self_collide>1</self_collide>
   <material>Gazebo/Blue</material>
 </gazebo>
 
 <gazebo reference="b_left_wheel_link">
   <mu1>0.9</mu1>
   <mu2>0.9</mu2>
-  <fdir1>1 0 0</fdir1>
-  <maxVel>0.0</maxVel>
-  <maxContacts>1</maxContacts>
-  <gravity>true</gravity>
-  <restitution_coefficient>1</restitution_coefficient>
-  <threshold>0</threshold>
-  <self_collide>1</self_collide>
   <material>Gazebo/Blue</material>
 </gazebo>
 
 <gazebo reference="b_right_wheel_link">
   <mu1>0.9</mu1>
   <mu2>0.9</mu2>
-  <fdir1>1 0 0</fdir1>
-  <maxVel>0.0</maxVel>
-  <maxContacts>1</maxContacts>
-  <gravity>true</gravity>
-  <restitution_coefficient>1</restitution_coefficient>
-  <threshold>0</threshold>
-  <self_collide>1</self_collide>
   <material>Gazebo/Blue</material>
 </gazebo>
 

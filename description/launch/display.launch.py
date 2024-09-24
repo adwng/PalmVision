@@ -17,10 +17,20 @@ def generate_launch_description():
 
     # Process the URDF filewerdna_description
     package_path = get_package_share_directory('description')
+    bringup_prefix = get_package_share_directory('bringup')
 
-    xacro_file = os.path.join(package_path, 'urdf', 'palmvision_core.xacro')
+    xacro_file = os.path.join(package_path, 'urdf', 'palmvision.xacro')
     robot_description_config=xacro.process_file(xacro_file)
     robot_urdf = robot_description_config.toxml()
+
+    rviz_config_file = os.path.join(bringup_prefix, 'config', 'display.rviz')
+
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        arguments=['-d', rviz_config_file],
+        output='screen'
+    )
 
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -31,13 +41,13 @@ def generate_launch_description():
         ]
     )
 
-    # Create the joint_state_publisher node
-    node_joint_state_publisher = Node(
-        package='joint_state_publisher',
-        executable='joint_state_publisher',
-        name='joint_state_publisher',
-        output='screen'
-    )
+    # # Create the joint_state_publisher node
+    # node_joint_state_publisher = Node(
+    #     package='joint_state_publisher',
+    #     executable='joint_state_publisher',
+    #     name='joint_state_publisher',
+    #     output='screen'
+    # )
 
     # Optionally include the joint_state_publisher_gui (for GUI control of the joints)
     node_joint_state_publisher_gui = Node(
@@ -51,7 +61,8 @@ def generate_launch_description():
     # Launch!
     return LaunchDescription([
         gui_arg,
+        rviz_node,
         node_robot_state_publisher,
-        node_joint_state_publisher,
+        # node_joint_state_publisher,
         node_joint_state_publisher_gui,
     ])
