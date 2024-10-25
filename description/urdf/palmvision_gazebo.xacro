@@ -3,17 +3,6 @@
 
 <gazebo reference="chassis_link">
   <material>Gazebo/Orange</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
-  <gravity>true</gravity>
-</gazebo>
-
-<gazebo reference="component_link">
-  <material>Gazebo/Orange</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
-  <self_collide>true</self_collide>
   <gravity>true</gravity>
 </gazebo>
 
@@ -31,15 +20,10 @@
                     <min_angle>-3.14</min_angle>
                     <max_angle>3.14</max_angle>
                 </horizontal>
-                <vertical>
-                    <samples>16</samples> <!-- Number of vertical layers -->
-                    <min_angle>-0.0</min_angle> <!-- Minimum vertical angle (in radians, ~-15 degrees) -->
-                    <max_angle>0.2618</max_angle> <!-- Maximum vertical angle (in radians, ~15 degrees) -->
-                </vertical>
             </scan>
             <range>
                 <min>0.3</min>
-                <max>10</max>
+                <max>15</max>
             </range>
         </ray>
         <plugin name="laser_controller" filename="libgazebo_ros_ray_sensor.so">
@@ -124,7 +108,9 @@
   <material>Gazebo/Blue</material>
 </gazebo>
 
-<!-- lidar -->
+<gazebo reference="arm_link">
+  <material>Gazebo/Blue</material>
+</gazebo>
 
 
 </robot>

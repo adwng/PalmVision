@@ -21,7 +21,7 @@ def generate_launch_description():
 
     rsp = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(rsp_launch_file),
-        launch_arguments = {'use_sim_time': 'true'}.items()
+        launch_arguments = {'use_sim_time': 'false'}.items()
     )
 
     gazebo = IncludeLaunchDescription(
@@ -35,20 +35,26 @@ def generate_launch_description():
     diff_drive_spawner = Node(
         package='controller_manager',
         executable='spawner',
-        arguments=['diff_cont']
+        arguments=['palmvision_base_controller']
+    )
+
+    position_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["servo_base_controller"]
     )
 
     joint_broad_spawner = Node(
         package='controller_manager',
         executable='spawner',
-        arguments=['joint_broad']
+        arguments=['joint_state_broadcaster']
     )
 
     twist_mux = Node(
         package="twist_mux",
         executable="twist_mux",
-        parameters=[twist_mux_config, {'use_sim_time' : True}],
-        remappings=[('/cmd_vel_out', '/diff_cont/cmd_vel_unstamped')]
+        parameters=[twist_mux_config, {'use_sim_time': 'false' }],
+        remappings=[('/cmd_vel_out', '/palmvision_base_controller/cmd_vel_unstamped')]
     )
 
     
@@ -59,7 +65,7 @@ def generate_launch_description():
             rsp, 
             gazebo, 
             diff_drive_spawner, 
-            joint_broad_spawner
-            
+            joint_broad_spawner,
+            position_controller
         ]
     )

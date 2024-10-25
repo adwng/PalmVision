@@ -17,6 +17,7 @@ def generate_launch_description():
 
 
     xacro_file = os.path.join(package_path,'urdf','palmvision_core.xacro')
+    # robot_description_config=xacro.process_file(xacro_file).toxml()
     robot_description_config = Command(['xacro ', xacro_file])
     
     # Create a robot_state_publisher node

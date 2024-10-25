@@ -9,7 +9,18 @@ controller_manager:
       type: diff_drive_controller/DiffDriveController
 
     servo_base_controller:
-      type: position_controllers/JointGroupPositionController
+      type: forward_command_controller/ForwardCommandController
+
+servo_base_controller:
+  ros__parameters:
+    joints:
+      - arm_joint
+    interface_name: position
+    command_interfaces:
+      - position 
+    state_interfaces:
+      - position
+
 
 palmvision_base_controller:
   ros__parameters:
@@ -51,8 +62,3 @@ palmvision_base_controller:
     angular.z.min_acceleration: -1.0
     angular.z.max_jerk: 0.0
     angular.z.min_jerk: 0.0
-
-servo_base_controller:
-  ros__parameters:
-    joints:
-      - arm_joint

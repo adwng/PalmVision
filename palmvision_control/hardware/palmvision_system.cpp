@@ -24,22 +24,10 @@ hardware_interface::CallbackReturn PalmVisionControlHardware::on_init(const hard
     cfg_.b_left_wheel_name = info_.hardware_parameters["back_left_wheel_name"];
     cfg_.b_right_wheel_name = info_.hardware_parameters["back_right_wheel_name"];
     cfg_.servo_name = info_.hardware_parameters["servo_name"];
-    cfg_.loop_rate = std::stof(info_.hardware_parameters["loop_rate"]);
     cfg_.device = info_.hardware_parameters["device"];
     cfg_.baud_rate = std::stoi(info_.hardware_parameters["baud_rate"]);
     cfg_.timeout_ms = std::stoi(info_.hardware_parameters["timeout_ms"]);
     cfg_.enc_counts_per_rev = std::stoi(info_.hardware_parameters["enc_counts_per_rev"]);
-    if (info_.hardware_parameters.count("pid_p") > 0)
-    {
-        cfg_.pid_p = std::stoi(info_.hardware_parameters["pid_p"]);
-        cfg_.pid_d = std::stoi(info_.hardware_parameters["pid_d"]);
-        cfg_.pid_i = std::stoi(info_.hardware_parameters["pid_i"]);
-        cfg_.pid_o = std::stoi(info_.hardware_parameters["pid_o"]);
-    }
-    else
-    {
-        RCLCPP_INFO(rclcpp::get_logger("PalmVisionControlHardware"), "PID values not supplied, using defaults.");
-    }
 
     wheel_f_l_.setup(cfg_.f_left_wheel_name, cfg_.enc_counts_per_rev);
     wheel_f_r_.setup(cfg_.f_right_wheel_name, cfg_.enc_counts_per_rev);
@@ -50,15 +38,6 @@ hardware_interface::CallbackReturn PalmVisionControlHardware::on_init(const hard
 
     for (const hardware_interface::ComponentInfo & joint : info_.joints)
     {
-        if (joint.command_interfaces.size() != 1)
-        {
-            RCLCPP_FATAL(
-                rclcpp::get_logger("PalmVisionControlHardware"),
-                "Joint '%s' has %zu command interfaces found. 1 expected.", joint.name.c_str(),
-                joint.command_interfaces.size());
-            return hardware_interface::CallbackReturn::ERROR;
-        }
-
         if (!(joint.command_interfaces[0].name == hardware_interface::HW_IF_POSITION ||
           joint.command_interfaces[0].name == hardware_interface::HW_IF_VELOCITY ||
           joint.command_interfaces[0].name == hardware_interface::HW_IF_ACCELERATION))
@@ -71,32 +50,17 @@ hardware_interface::CallbackReturn PalmVisionControlHardware::on_init(const hard
             return hardware_interface::CallbackReturn::ERROR;
         }
 
-        // if (joint.state_interfaces.size() < 1)
-        // {
-        //     RCLCPP_FATAL(
-        //         rclcpp::get_logger("PalmVisionControlHardware"),
-        //         "Joint '%s' has %zu state interface.", joint.name.c_str(),
-        //         joint.state_interfaces.size());
-        //     return hardware_interface::CallbackReturn::ERROR;
-        // }
-
-        // if (joint.state_interfaces[0].name != hardware_interface::HW_IF_POSITION)
-        // {
-        //     RCLCPP_FATAL(
-        //         rclcpp::get_logger("PalmVisionControlHardware"),
-        //         "Joint '%s' have '%s' as first state interface. '%s' expected.", joint.name.c_str(),
-        //         joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
-        //     return hardware_interface::CallbackReturn::ERROR;
-        // }
-
-        // if (joint.state_interfaces[1].name != hardware_interface::HW_IF_VELOCITY)
-        // {
-        //     RCLCPP_FATAL(
-        //         rclcpp::get_logger("PalmVisionControlHardware"),
-        //         "Joint '%s' have '%s' as second state interface. '%s' expected.", joint.name.c_str(),
-        //         joint.state_interfaces[1].name.c_str(), hardware_interface::HW_IF_VELOCITY);
-        //     return hardware_interface::CallbackReturn::ERROR;
-        // }
+        if (!(joint.state_interfaces[0].name == hardware_interface::HW_IF_POSITION ||
+          joint.state_interfaces[0].name == hardware_interface::HW_IF_VELOCITY ||
+          joint.state_interfaces[0].name == hardware_interface::HW_IF_ACCELERATION))
+        {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("PalmVisionControlHardware"),
+                "Joint '%s' has %s command interface. Expected %s, %s, or %s.", joint.name.c_str(),
+                joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION,
+                hardware_interface::HW_IF_VELOCITY, hardware_interface::HW_IF_ACCELERATION);
+            return hardware_interface::CallbackReturn::ERROR;
+        }
 
     }
 
@@ -151,7 +115,7 @@ std::vector<hardware_interface::CommandInterface> PalmVisionControlHardware::exp
         wheel_b_r_.name, hardware_interface::HW_IF_VELOCITY, &wheel_b_r_.cmd));
 
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
-        servo.name, hardware_interface::HW_IF_POSITION, &servo.cmd));
+        servo.name, hardware_interface::HW_IF_POSITION, &servo.pos));
 
     return command_interfaces;
 
@@ -161,10 +125,6 @@ hardware_interface::CallbackReturn PalmVisionControlHardware::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
     RCLCPP_INFO(rclcpp::get_logger("PalmVisionControlHardware"), "Configuring ...please wait...");
-    if (comms_.connected())
-    {
-        comms_.disconnect();
-    }
     comms_.connect(cfg_.device, cfg_.baud_rate, cfg_.timeout_ms);
     RCLCPP_INFO(rclcpp::get_logger("PalmVisionControlHardware"), "Successfully configured!");
 
@@ -192,10 +152,6 @@ hardware_interface::CallbackReturn PalmVisionControlHardware::on_activate(
   {
     return hardware_interface::CallbackReturn::ERROR;
   }
-  if (cfg_.pid_p > 0)
-  {
-    comms_.set_pid_values(cfg_.pid_p,cfg_.pid_d,cfg_.pid_i,cfg_.pid_o);
-  }
   RCLCPP_INFO(rclcpp::get_logger("PalmVisionControlHardware"), "Successfully activated!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -219,7 +175,7 @@ hardware_interface::return_type PalmVisionControlHardware::read(
         return hardware_interface::return_type::ERROR;
     }
 
-    comms_.read_encoder_values(wheel_f_l_.enc, wheel_b_l_.enc, wheel_f_r_.enc, wheel_b_r_.enc);
+    comms_.read_encoder_values(wheel_f_l_.enc, wheel_f_r_.enc, wheel_b_l_.enc, wheel_b_r_.enc, servo.pos);
 
     double delta_seconds = period.seconds();
 
@@ -239,9 +195,6 @@ hardware_interface::return_type PalmVisionControlHardware::read(
     wheel_b_r_.pos = wheel_b_r_.cal_enc_angle();
     wheel_b_r_.vel = (wheel_b_r_.pos - pos_prev)/ delta_seconds;
 
-    // TODO: DO READ SERVO POSITION AND VALUES
-    comms_.read_servo_position(servo.pos);
-
     return hardware_interface::return_type::OK;
 
 }
@@ -255,19 +208,25 @@ hardware_interface::return_type palmvision_control::PalmVisionControlHardware::w
         return hardware_interface::return_type::ERROR;
     }
 
-    int motor_f_l_counts_per_loop = wheel_f_l_.cmd/wheel_f_l_.rads_per_count/cfg_.loop_rate;
-    int motor_b_l_counts_per_loop = wheel_b_l_.cmd/wheel_b_l_.rads_per_count/cfg_.loop_rate;
-    int motor_f_r_counts_per_loop = wheel_f_r_.cmd/wheel_f_r_.rads_per_count/cfg_.loop_rate;
-    int motor_b_r_counts_per_loop = wheel_b_r_.cmd/wheel_b_r_.rads_per_count/cfg_.loop_rate;
+    RCLCPP_INFO(
+        rclcpp::get_logger("PalmVisionControlHardware"),
+        "Commands - FL: %.2f, FR: %.2f, BL: %.2f, BR: %.2f, Servo: %.2f",
+        wheel_f_l_.cmd, wheel_f_r_.cmd, 
+        wheel_b_l_.cmd, wheel_b_r_.cmd,
+        servo.cmd
+    );
+
+    double radius = 0.127;
+    double circumference = 2 * M_PI * radius; // Circumference of the circle
+
+    float motor_f_l_rpm = (wheel_f_l_.cmd/ circumference) * 60;
+    float motor_b_l_rpm = (wheel_b_l_.cmd/ circumference) * 60;
+    float motor_f_r_rpm = (wheel_f_r_.cmd/ circumference) * 60;
+    float motor_b_r_rpm = (wheel_b_r_.cmd/ circumference) * 60;
 
     comms_.set_motor_values(
-        motor_f_l_counts_per_loop, 
-        motor_b_l_counts_per_loop, 
-        motor_f_r_counts_per_loop, 
-        motor_b_r_counts_per_loop
-        );
-
-    comms_.set_servo_values(servo.cmd);
+        motor_f_l_rpm, motor_f_r_rpm, motor_b_l_rpm, motor_b_r_rpm, servo.cmd
+    );
 
     return hardware_interface::return_type::OK;
 }

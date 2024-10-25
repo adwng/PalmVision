@@ -2,34 +2,7 @@
 <robot name='palmvision' xmlns:xacro="http://www.ros.org/wiki/xacro">
     <xacro:include filename='inertial_macros.xacro'/>
 
-    <xacro:property name='chassis_length' value='0.688'/>
-    <xacro:property name='chassis_width' value='0.688'/>
-    <xacro:property name='chassis_height' value='0.29'/>
-
-    <xacro:property name='wheel_radius' value='0.07'/>
-    <xacro:property name='wheel_thickness' value='0.04'/>
-
-    <xacro:property name='component_length' value='0.15'/>
-    <xacro:property name='component_width' value='0.14'/>
-    <xacro:property name='component_height' value='0.1'/>
-
-    <xacro:property name='camera_length' value='0.02'/>
-    <xacro:property name='camera_width' value='0.02'/>
-    <xacro:property name='camera_height' value='0.02'/>
-
-    <xacro:property name='lidar_radius' value='0.075'/>
-    <xacro:property name='lidar_thickness' value='0.065'/>
-
-    <xacro:property name='chassis_mass' value='4.0'/>
-    <xacro:property name='wheel_mass' value='2.0'/>
-    <xacro:property name='component_mass' value='1.0'/>
-    <xacro:property name='lidar_mass' value='0.23'/>
-    <xacro:property name='camera_mass' value='0.55'/>
-    <xacro:property name='imu_mass' value='0.01'/>
-
-    <xacro:property name='wheel_offset_x' value='${chassis_length/2 - wheel_radius}'/>
-    <xacro:property name='wheel_offset_y' value='${chassis_width/2 + wheel_thickness/2 +0.01}'/>
-    <xacro:property name='wheel_offset_z' value='-${chassis_height/2}'/>
+    <!-- COLORS -->
 
     <material name="white">
         <color rgba="1 1 1 1" />
@@ -51,10 +24,60 @@
         <color rgba="1 0 0 1"/>
     </material>
 
+    <!-- CHASSIS PARAMS -->
+    <xacro:property name='chassis_length' value='0.688'/>
+    <xacro:property name='chassis_width' value='0.688'/>
+    <xacro:property name='chassis_height' value='0.29'/>
+    <xacro:property name='chassis_mass' value='30.0'/>
+
+    <!-- WHEEL PARAMS -->
+    <xacro:property name='wheel_radius' value='0.127'/>
+    <xacro:property name='wheel_thickness' value='0.0762'/>
+    <xacro:property name='wheel_mass' value='2.0'/>
+
+    <xacro:property name='wheel_offset_x' value='${chassis_length/2 - wheel_radius/2}'/>
+    <xacro:property name='wheel_offset_y' value='${chassis_width/2 + wheel_thickness/2}'/>
+    <xacro:property name='wheel_offset_z' value='-${chassis_height/2}'/>
+
+    <!-- EXTENDED ARM PARAMS -->
+    <xacro:property name='arm_length' value='0.01'/>
+    <xacro:property name='arm_height' value='0.01'/>
+    <xacro:property name='arm_width' value='0.01'/>
+    <xacro:property name='arm_mass' value='0.2'/>
+
+    <xacro:property name='arm_offset_x' value='0'/>
+    <xacro:property name='arm_offset_y' value='${chassis_width/2 + arm_width/2}'/>
+    <xacro:property name='arm_offset_z' value='${chassis_height/2-arm_width}'/>
+
+    <!-- LIDAR PARAMS -->
+    <xacro:property name='lidar_radius' value='0.0379'/>
+    <xacro:property name='lidar_thickness' value='0.0347'/>
+    <xacro:property name='lidar_mass' value='0.2'/>
+    <xacro:property name='lidar_offset_x' value='${chassis_length/2 - lidar_radius}'/>
+    <xacro:property name='lidar_offset_y' value='0'/>
+    <xacro:property name='lidar_offset_z' value='${chassis_height/2 + lidar_thickness/2}'/>
+
+    <!-- CAMERA PARAMS -->
+    <xacro:property name='camera_length' value='0.02'/>
+    <xacro:property name='camera_width' value='0.02'/>
+    <xacro:property name='camera_height' value='0.02'/>
+    <xacro:property name='camera_mass' value='0.55'/>
+
+    <xacro:property name='camera_offset_x' value='${arm_length/2 + camera_length/2}'/>
+    <xacro:property name='camera_offset_y' value='0'/>
+    <xacro:property name='camera_offset_z' value='0'/>
+
+
     <!-- base -->
     <link name="base_link"></link>
 
     <link name="base_footprint"></link>
+
+    <joint name="base_footprint_joint" type="fixed">
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <parent link="base_link"/>
+        <child link="base_footprint"/>
+    </joint>
 
     <link name="chassis_link">
         <xacro:inertial_box mass="${chassis_mass}" x="${chassis_length}" y="${chassis_width}" z="${chassis_height}">
@@ -76,43 +99,39 @@
         </collision>
     </link>
 
-    <link name="component_link">
-        <xacro:inertial_box mass="${component_mass}" x="${component_length}" y="${component_width}" z="${component_height}">
+    <joint name="chassis_joint" type="fixed">
+        <origin xyz="0.0 0.0 ${chassis_height}" rpy="0.0 0.0 0.0"/>
+        <parent link="base_link"/>
+        <child link="chassis_link"/>
+    </joint>
+
+    <link name="arm_link">
+        <xacro:inertial_box mass="${arm_mass}" x="${arm_length}" y="${arm_width}" z="${arm_height}">
             <origin xyz="0 0 0" rpy="0 0 0"/>
         </xacro:inertial_box>
         <visual>
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
             <geometry>
-                <box size="${component_length} ${component_width} ${component_height}"/>
+                <box size="${arm_length} ${arm_width} ${arm_height}"/>
             </geometry>
             <material name="orange"/>
         </visual>
         <collision>
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
             <geometry>
-                <box size="${component_length} ${component_width} ${component_height}"/>
+                <box size="${arm_length} ${arm_width} ${arm_height}"/>
             </geometry>
             <material name="orange"/>
         </collision>
     </link>
 
-    <link name="lidar_link">
-        <visual>
-            <geometry>
-                <cylinder radius="${lidar_radius}" length="${lidar_thickness}"/>
-            </geometry>
-            <material name="blue"/>
-        </visual>
-        <collision>
-            <geometry>
-                <cylinder radius="${lidar_radius}" length="${lidar_thickness}"/>
-            </geometry>
-            <material name="blue"/>
-        </collision>
-        <xacro:inertial_cylinder mass="${lidar_mass}" length="${lidar_thickness}" radius="${lidar_radius}">
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-        </xacro:inertial_cylinder>
-    </link>
+    <joint name="arm_joint" type="revolute">
+        <origin xyz="${arm_offset_x} ${arm_offset_y} ${arm_offset_z}" rpy="0.0 0.0 ${pi/2}"/>
+        <parent link="chassis_link"/>
+        <child link="arm_link"/>
+        <axis xyz="0.0 1.0 0.0"/>
+        <limit lower="${-pi/2}" upper="${pi/2}" effort="10.0" velocity="2.0"/>
+    </joint>
 
     <link name="camera_link">
         <xacro:inertial_box mass="${camera_mass}" x="${camera_length}" y="${camera_width}" z="${camera_height}">
@@ -134,6 +153,36 @@
         </collision>
     </link>
 
+    <joint name="camera_joint" type="fixed">
+        <origin xyz="${camera_offset_x} ${camera_offset_y} ${camera_offset_z}" rpy="0.0 0.0 0.0"/>
+        <parent link="arm_link"/>
+        <child link="camera_link"/>
+    </joint>
+
+    <link name="lidar_link">
+        <visual>
+            <geometry>
+                <cylinder radius="${lidar_radius}" length="${lidar_thickness}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${lidar_radius}" length="${lidar_thickness}"/>
+            </geometry>
+            <material name="blue"/>
+        </collision>
+        <xacro:inertial_cylinder mass="${lidar_mass}" length="${lidar_thickness}" radius="${lidar_radius}">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="lidar_joint" type="fixed">
+        <origin xyz="${lidar_offset_x} ${lidar_offset_y} ${lidar_offset_z}" rpy="0.0 0.0 0.0"/>
+        <parent link="chassis_link"/>
+        <child link="lidar_link"/>
+    </joint>
+
     <link name="f_left_wheel_link">
         <visual>
             <geometry>
@@ -143,7 +192,7 @@
         </visual>
         <collision>
             <geometry>
-                <sphere radius="${wheel_radius}"/>
+                <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
             </geometry>
             <material name="blue"/>
         </collision>
@@ -161,7 +210,7 @@
         </visual>
         <collision>
             <geometry>
-                <sphere radius="${wheel_radius}"/>
+                <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
             </geometry>
             <material name="blue"/>
         </collision>
@@ -179,7 +228,7 @@
         </visual>
         <collision>
             <geometry>
-                <sphere radius="${wheel_radius}"/>
+                <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
             </geometry>
             <material name="blue"/>
         </collision>
@@ -197,7 +246,7 @@
         </visual>
         <collision>
             <geometry>
-                <sphere radius="${wheel_radius}"/>
+                <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
             </geometry>
             <material name="blue"/>
         </collision>
@@ -205,36 +254,6 @@
             <origin xyz="0 0 0" rpy="0 0 0"/>
         </xacro:inertial_cylinder>
     </link>
-
-    <joint name="base_footprint_joint" type="fixed">
-        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-        <parent link="base_link"/>
-        <child link="base_footprint"/>
-    </joint>
-
-    <joint name="chassis_joint" type="fixed">
-        <origin xyz="0.0 0.0 ${chassis_height}" rpy="0.0 0.0 0.0"/>
-        <parent link="base_link"/>
-        <child link="chassis_link"/>
-    </joint>
-
-    <joint name="component_joint" type="fixed">
-        <origin xyz="-${chassis_length/2 - component_length/2} 0.0 ${chassis_height/2 + component_height/2}" rpy="0.0 0.0 0.0"/>
-        <parent link="chassis_link"/>
-        <child link="component_link"/>
-    </joint>
-
-    <joint name="lidar_joint" type="fixed">
-        <origin xyz="0.0 0.0 ${component_height/2 + lidar_thickness/2}" rpy="0.0 0.0 0.0"/>
-        <parent link="component_link"/>
-        <child link="lidar_link"/>
-    </joint>
-
-    <joint name="camera_joint" type="fixed">
-        <origin xyz="${component_length/2 + camera_length/2} 0.0 0.0" rpy="0.0 0.0 0.0"/>
-        <parent link="component_link"/>
-        <child link="camera_link"/>
-    </joint>
 
     <joint name="f_left_wheel_joint" type="continuous">
         <parent link="chassis_link"/>
@@ -263,15 +282,4 @@
         <origin xyz="-${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="${pi/2} 0 0" />
         <axis xyz="0 0 -1"/>
     </joint>
-
-    <link name="camera_link_optical"> </link>
-
-    <!-- fixes the inverse xyz of camera in gazebo to ros -->
-    <joint name="camera_optical_joint" type="fixed">
-        <parent link="camera_link"/>
-        <child link="camera_link_optical"/>
-        <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
-    </joint>
-
-
 </robot>

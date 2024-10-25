@@ -43,7 +43,7 @@ public:
 
     bool connected() const{return serial_conn_.IsOpen();}
 
-    std::string send_msg(const std::string &msg_to_send, bool print_output = false)
+    std::string send_msg(const std::string &msg_to_send, bool print_output = true)
     {
         serial_conn_.FlushIOBuffers();
         serial_conn_.Write(msg_to_send);
@@ -51,8 +51,8 @@ public:
         std::string response = "";
         try
         {
-        // Responses end with \r\n so we will read up to (and including) the \n.
-        serial_conn_.ReadLine(response, '\n', timeout_ms_);
+            // Responses end with \r\n so we will read up to (and including) the \n.
+            serial_conn_.ReadLine(response, '\n', timeout_ms_);
         }
         catch (const LibSerial::ReadTimeout&)
         {
@@ -61,7 +61,7 @@ public:
 
         if (print_output)
         {
-        std::cout << "Sent: " << msg_to_send << " Recv: " << response << std::endl;
+            std::cout << "Sent: " << msg_to_send << " Recv: " << response << std::endl;
         }
         
         return response;
@@ -70,65 +70,62 @@ public:
     void send_empty_msg(){std::string response = send_msg("\r");}
 
     // REFACTOR IT TO 4 ENCODER DATA, MOTOR COMMAND, AND INCLUDE SERVO
-    void read_encoder_values(int &val_1, int &val_2, int &val_3, int &val_4)
+    void read_encoder_values(int &val_1, int &val_2, int &val_3, int &val_4, double &val_5) 
     {
-        // Front left, Back Left, Front Right, Back Right
-        std::string response = send_msg("e\r");
+        // Send the request and get the response
+        std::string response = send_msg("e\n");
 
-        std::string delimiter = " ";
-        size_t del_pos = 0;
-        std::string token;
-        
-        // Parse the first value
-        del_pos = response.find(delimiter);
-        token = response.substr(0, del_pos);
-        val_1 = std::atoi(token.c_str());
-        response.erase(0, del_pos + delimiter.length());
+        // Check if the response starts with 'e' and has the expected format
+        if (response.substr(0, 2) != "e|") {
+            // Handle error: unexpected response format
+            return;
+        }
 
-        // Parse the second value
-        del_pos = response.find(delimiter);
-        token = response.substr(0, del_pos);
-        val_2 = std::atoi(token.c_str());
-        response.erase(0, del_pos + delimiter.length());
+        std::string delimiter = "|";
+        size_t pos = 0;
 
-        // Parse the third value
-        del_pos = response.find(delimiter);
-        token = response.substr(0, del_pos);
-        val_3 = std::atoi(token.c_str());
-        response.erase(0, del_pos + delimiter.length());
+        // Move past the 'e'
+        response = response.substr(2); // Skip 'e|'
 
-        // Parse the fourth value (remaining part of the string)
-        val_4 = std::atoi(response.c_str());
+        // Parse the first value (fl)
+        pos = response.find(delimiter);
+        std::string token = response.substr(0, pos);
+        val_1 = std::atoi(token.substr(token.find(':') + 1).c_str());
+        response.erase(0, pos + delimiter.length());
+
+        // Parse the second value (fr)
+        pos = response.find(delimiter);
+        token = response.substr(0, pos);
+        val_2 = std::atoi(token.substr(token.find(':') + 1).c_str());
+        response.erase(0, pos + delimiter.length());
+
+        // Parse the third value (rl)
+        pos = response.find(delimiter);
+        token = response.substr(0, pos);
+        val_3 = std::atoi(token.substr(token.find(':') + 1).c_str());
+        response.erase(0, pos + delimiter.length());
+
+        // Parse the fourth value (rr)
+        pos = response.find(delimiter);
+        token = response.substr(0, pos);
+        val_4 = std::atoi(token.substr(token.find(':') + 1).c_str());
+        response.erase(0, pos + delimiter.length());
+
+        // Parse the fifth value (s)
+        val_5 = std::atof(response.substr(response.find(':') + 1).c_str());
     }
 
-    void read_servo_position(double &val_1)
+    void set_motor_values(double val_1, double val_2, double val_3, double val_4, double val_5) 
     {
-        std::string response = send_msg("t\r");
-
-        val_1 = std::atoi(response.c_str());
-    }
-
-    void set_motor_values(int val_1, int val_2, int val_3, int val_4)
-    {
-        // Front left, Back Left, Front Right, Back Right
+        // Front Left, Front Right, Back Left, Back Right
         std::stringstream ss;
-        ss << "m " << val_1 << " " << val_2 << " " << val_3 << " " << val_4 <<"\r";
+        ss << "m|fl:" << val_1 
+        << "|fr:" << val_2 
+        << "|rl:" << val_3 
+        << "|rr:" << val_4 
+        << "|s:" << val_5 << "\r";
         send_msg(ss.str());
     }
-
-    void set_servo_values(int val_1)
-    {
-        std::stringstream ss;
-        ss << "s " << val_1 <<"\r";
-    }
-
-    void set_pid_values(int k_p, int k_d, int k_i, int k_o)
-    {
-        std::stringstream ss;
-        ss << "u " << k_p << ":" << k_d << ":" << k_i << ":" << k_o << "\r";
-        send_msg(ss.str());
-    }
-
 
 private:
     LibSerial::SerialPort serial_conn_;

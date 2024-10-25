@@ -6,10 +6,10 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /RobotModel1
+        - /RobotModel1/Status1
+        - /RobotModel1/Links1
         - /PointCloud21
-        - /Imu1
-        - /Imu1/Box properties1
-        - /Imu1/Axes properties1
         - /Map1
       Splitter Ratio: 0.5
     Tree Height: 514
@@ -57,6 +57,8 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        arm_link:
+          Value: true
         b_left_wheel_link:
           Value: true
         b_right_wheel_link:
@@ -67,21 +69,13 @@ Visualization Manager:
           Value: true
         camera_link:
           Value: true
-        camera_link_optical:
-          Value: true
         chassis_link:
-          Value: true
-        component_link:
           Value: true
         f_left_wheel_link:
           Value: true
         f_right_wheel_link:
           Value: true
-        imu_link:
-          Value: true
         lidar_link:
-          Value: true
-        map:
           Value: true
         odom:
           Value: true
@@ -91,8 +85,6 @@ Visualization Manager:
       Show Axes: false
       Show Names: false
       Tree:
-        map:
-          {}
         odom:
           base_link:
             base_footprint:
@@ -102,17 +94,11 @@ Visualization Manager:
                 {}
               b_right_wheel_link:
                 {}
-              component_link:
-                camera_link:
-                  camera_link_optical:
-                    {}
-                lidar_link:
-                  {}
               f_left_wheel_link:
                 {}
               f_right_wheel_link:
                 {}
-              imu_link:
+              lidar_link:
                 {}
       Update Interval: 0
       Value: true
@@ -134,6 +120,11 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        arm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         b_left_wheel_link:
           Alpha: 1
           Show Axes: false
@@ -157,16 +148,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        camera_link_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         chassis_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        component_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -177,11 +159,6 @@ Visualization Manager:
           Show Trail: false
           Value: true
         f_right_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        imu_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -216,8 +193,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 2.8991429805755615
-        Min Value: 0.35749998688697815
+        Max Value: 0.452349990606308
+        Min Value: 0.452349990606308
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -247,34 +224,6 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Acceleration properties:
-        Acc. vector alpha: 1
-        Acc. vector color: 255; 0; 0
-        Acc. vector scale: 1
-        Derotate acceleration: true
-        Enable acceleration: false
-      Axes properties:
-        Axes scale: 1
-        Enable axes: true
-      Box properties:
-        Box alpha: 1
-        Box color: 255; 0; 0
-        Enable box: false
-        x_scale: 1
-        y_scale: 1
-        z_scale: 1
-      Class: rviz_imu_plugin/Imu
-      Enabled: true
-      Name: Imu
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /imu
-      Value: true
-      fixed_frame_orientation: true
     - Alpha: 0.699999988079071
       Class: rviz_default_plugins/Map
       Color Scheme: map
@@ -299,7 +248,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: map
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -342,7 +291,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 15.728605270385742
+      Distance: 1.3863117694854736
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -357,10 +306,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.0453988313674927
+      Pitch: 0.6203992366790771
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.545417547225952
+      Yaw: 0.5404164791107178
     Saved:
       - Class: rviz_default_plugins/Orbit
         Distance: 2.722724437713623

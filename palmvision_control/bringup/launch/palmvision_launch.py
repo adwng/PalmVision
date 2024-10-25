@@ -29,24 +29,26 @@ def generate_launch_description():
     )
 
     rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare("palmvision_control"), "rviz", "config.rviz"]
+        [FindPackageShare("palmvision_control"), "config", "display.rviz"]
     )
-
+ 
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_description, robot_controllers],
+        parameters=[robot_controllers],
         output="both",
+        remappings=[
+            ("~/robot_description", "/robot_description"),
+        ],
     )
+
     robot_state_pub_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="both",
         parameters=[robot_description],
-        # remappings=[
-        #     ("/diff_drive_controller/cmd_vel_unstamped", "/cmd_vel"),
-        # ],
     )
+
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -92,14 +94,17 @@ def generate_launch_description():
     # Delay start of servo controller after "robot controller"
     delay_servo_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner,
-            on_exit=[servo_controller_spawner]
+            target_action=robot_controller_spawner,
+            on_exit=[servo_controller_spawner],
         )
     )
 
     nodes = [
-        control_node,
-        robot_state_pub_node,
+        robot_state_pub_node,  # Publish robot description first
+        control_node,  # Then start controller manager
+        # rviz_node,
+        # robot_controller_spawner,
+        # servo_controller_spawner,
         joint_state_broadcaster_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,

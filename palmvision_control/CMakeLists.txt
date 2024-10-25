@@ -55,7 +55,7 @@ install(
 #   DESTINATION share/palmvision_control
 # )
 install(
-  DIRECTORY description/ros2_control description/urdf description/rviz
+  DIRECTORY description/ros2_control description/urdf 
   DESTINATION share/palmvision_control
 )
 install(
