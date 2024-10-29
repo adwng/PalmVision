@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler
+from launch.actions import RegisterEventHandler, IncludeLaunchDescription
 from launch.event_handlers import OnProcessExit
 from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
 
@@ -99,12 +99,42 @@ def generate_launch_description():
         )
     )
 
+    joystick_launch_file = PathJoinSubstitution(
+        [
+            FindPackageShare("palmvision_control"),
+            "launch",
+            "joystick.launch.py",
+        ]
+    )
+
+    lidar_launch_file = PathJoinSubstitution(
+        [
+            FindPackageShare("ydlidar_ros2_driver"),
+            "launch",
+            "ydlidar_launch.py",
+        ]
+    )
+
+    camera_launch_file = PathJoinSubstitution(
+        [
+            FindPackageShare("palmvision_control"),
+            "launch",
+            "camera.launch.py"
+        ]
+    )
+
+    launch_joystick = IncludeLaunchDescription(joystick_launch_file)
+
+    launch_lidar = IncludeLaunchDescription(lidar_launch_file)
+
+    launch_camera = IncludeLaunchDescription(camera_launch_file)
+
     nodes = [
+        launch_joystick,
+        launch_lidar,
+        launch_camera,
         robot_state_pub_node,  # Publish robot description first
         control_node,  # Then start controller manager
-        # rviz_node,
-        # robot_controller_spawner,
-        # servo_controller_spawner,
         joint_state_broadcaster_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,

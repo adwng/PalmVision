@@ -152,6 +152,7 @@ hardware_interface::CallbackReturn PalmVisionControlHardware::on_activate(
   {
     return hardware_interface::CallbackReturn::ERROR;
   }
+  else{comms_.reset_encoder_values();}
   RCLCPP_INFO(rclcpp::get_logger("PalmVisionControlHardware"), "Successfully activated!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -208,13 +209,13 @@ hardware_interface::return_type palmvision_control::PalmVisionControlHardware::w
         return hardware_interface::return_type::ERROR;
     }
 
-    RCLCPP_INFO(
-        rclcpp::get_logger("PalmVisionControlHardware"),
-        "Commands - FL: %.2f, FR: %.2f, BL: %.2f, BR: %.2f, Servo: %.2f",
-        wheel_f_l_.cmd, wheel_f_r_.cmd, 
-        wheel_b_l_.cmd, wheel_b_r_.cmd,
-        servo.cmd
-    );
+    // RCLCPP_INFO(
+    //     rclcpp::get_logger("PalmVisionControlHardware"),
+    //     "Commands - FL: %.2f, FR: %.2f, BL: %.2f, BR: %.2f, Servo: %.2f",
+    //     wheel_f_l_.cmd, wheel_f_r_.cmd, 
+    //     wheel_b_l_.cmd, wheel_b_r_.cmd,
+    //     servo.cmd
+    // );
 
     double radius = 0.127;
     double circumference = 2 * M_PI * radius; // Circumference of the circle

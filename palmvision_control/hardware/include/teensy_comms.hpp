@@ -43,7 +43,7 @@ public:
 
     bool connected() const{return serial_conn_.IsOpen();}
 
-    std::string send_msg(const std::string &msg_to_send, bool print_output = true)
+    std::string send_msg(const std::string &msg_to_send, bool print_output = false)
     {
         serial_conn_.FlushIOBuffers();
         serial_conn_.Write(msg_to_send);
@@ -56,7 +56,7 @@ public:
         }
         catch (const LibSerial::ReadTimeout&)
         {
-            std::cerr << "The ReadByte() call has timed out." << std::endl ;
+            // std::cerr << "The ReadByte() call has timed out." << std::endl ;
         }
 
         if (print_output)
@@ -68,6 +68,8 @@ public:
     }
 
     void send_empty_msg(){std::string response = send_msg("\r");}
+
+    void reset_encoder_values(){std::string response = send_msg("r\r");}
 
     // REFACTOR IT TO 4 ENCODER DATA, MOTOR COMMAND, AND INCLUDE SERVO
     void read_encoder_values(int &val_1, int &val_2, int &val_3, int &val_4, double &val_5) 

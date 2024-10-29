@@ -9,7 +9,7 @@
             <param name="back_left_wheel_name">b_left_wheel_joint</param>
             <param name="back_right_wheel_name">b_right_wheel_joint</param>
             <param name="servo_name">arm_joint</param>
-            <param name="device">/dev/ttyUSB0</param>
+            <param name="device">/dev/esp32</param>
             <param name="baud_rate">115200</param>
             <param name="timeout_ms">1000</param>
             <param name="enc_counts_per_rev">480</param>

@@ -201,10 +201,34 @@
         </xacro:inertial_cylinder>
     </link>
 
+    <link name="pseudo_lidar_link">
+        <visual>
+            <geometry>
+                <cylinder radius="${lidar_radius}" length="${lidar_thickness}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${lidar_radius}" length="${lidar_thickness}"/>
+            </geometry>
+            <material name="blue"/>
+        </collision>
+        <xacro:inertial_cylinder mass="${lidar_mass}" length="${lidar_thickness}" radius="${lidar_radius}">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
     <joint name="lidar_joint" type="fixed">
         <origin xyz="0 0 ${0.15/2 + lidar_thickness/2}" rpy="0.0 0.0 0.0"/>
         <parent link="support_link"/>
         <child link="lidar_link"/>
+    </joint>
+
+    <joint name="pseudo_lidar_joint" type="fixed">
+        <origin xyz="0 0 ${0.15/2 + lidar_thickness/2}" rpy="0.0 0.0 0.0"/>
+        <parent link="support_link"/>
+        <child link="pseudo_lidar_link"/>
     </joint>
 
     <link name="f_left_wheel_link">
