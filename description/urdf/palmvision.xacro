@@ -159,6 +159,7 @@
         <child link="camera_link"/>
     </joint>
 
+<<<<<<< HEAD
     <link name="support_link">
         <visual>
             <geometry>
@@ -183,6 +184,8 @@
         <child link="support_link"/>
     </joint>
 
+=======
+>>>>>>> a7ddd0e851e32603846306905106ee9ed3724cd1
     <link name="lidar_link">
         <visual>
             <geometry>
@@ -201,6 +204,7 @@
         </xacro:inertial_cylinder>
     </link>
 
+<<<<<<< HEAD
     <link name="pseudo_lidar_link">
         <visual>
             <geometry>
@@ -231,6 +235,14 @@
         <child link="pseudo_lidar_link"/>
     </joint>
 
+=======
+    <joint name="lidar_joint" type="fixed">
+        <origin xyz="${lidar_offset_x} ${lidar_offset_y} ${lidar_offset_z}" rpy="0.0 0.0 0.0"/>
+        <parent link="chassis_link"/>
+        <child link="lidar_link"/>
+    </joint>
+
+>>>>>>> a7ddd0e851e32603846306905106ee9ed3724cd1
     <link name="f_left_wheel_link">
         <visual>
             <geometry>

@@ -53,7 +53,11 @@ def generate_launch_description():
     twist_mux = Node(
         package="twist_mux",
         executable="twist_mux",
+<<<<<<< HEAD
         parameters=[twist_mux_config, {'use_sim_time': True }],
+=======
+        parameters=[twist_mux_config, {'use_sim_time': 'false' }],
+>>>>>>> a7ddd0e851e32603846306905106ee9ed3724cd1
         remappings=[('/cmd_vel_out', '/palmvision_base_controller/cmd_vel_unstamped')]
     )
 
