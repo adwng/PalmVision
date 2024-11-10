@@ -107,6 +107,14 @@ def generate_launch_description():
         ]
     )
 
+    twist_mux_config = PathJoinSubstitution(
+        [
+            FindPackageShare("palmvision_control"),
+            "config",
+            "twist_mux.yaml"
+        ]
+    )
+
     lidar_launch_file = PathJoinSubstitution(
         [
             FindPackageShare("ydlidar_ros2_driver"),
@@ -129,8 +137,16 @@ def generate_launch_description():
 
     launch_camera = IncludeLaunchDescription(camera_launch_file)
 
+    twist_mux = Node(
+        package="twist_mux",
+        executable="twist_mux",
+        parameters=[twist_mux_config, {'use_sim_time' : True}],
+        remappings=[('/cmd_vel_out', '/diff_cont/cmd_vel_unstamped')]
+    )
+
     nodes = [
         launch_joystick,
+        twist_mux,
         launch_lidar,
         launch_camera,
         robot_state_pub_node,  # Publish robot description first
